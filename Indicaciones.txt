@@ -1,0 +1,3 @@
+1- Crear entorno virtual -> python -m venv 'nombre entorno virtual'
+
+2- Instalación fastapi y uvicorn -> pip install fastapi uvicorn
