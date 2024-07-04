@@ -1,12 +1,34 @@
 '''docstring'''
-from fastapi import FastAPI, Body
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Path, Query #Body
+from fastapi.responses import HTMLResponse, JSONResponse
+from pydantic import BaseModel, Field
+from typing import Optional
 
 app = FastAPI(
     title ='Aprendiendo FastApi',
     description = 'Primeros pasos de una Api',
     version= '0.0.1',
 )
+
+class Movie(BaseModel):
+    '''docstring'''
+    id: Optional[int] = None
+    title: str = Field(default= 'Título de la película', min_length=3, max_length=60)
+    overview: str = Field(default= 'Descripción', min_length=5, max_length=60)
+    year: int = Field(default= 2023)
+    rating: float = Field(ge=1, le=10)
+    category: str = Field(min_length=3, max_length=15, default='Categoria')
+
+#    def to_dict(self):
+#        return {
+#            "id": self.id,
+#            "title": self.title,
+#            "overview": self.overview,
+#            "year": self.year,
+#            "rating": self.rating,
+#            "category": self.category
+#
+#        }
 
 movies = [
     {
@@ -27,10 +49,10 @@ def read_root():
 @app.get('/movies', tags=['Movies'])
 def get_movies():
     '''docstring'''
-    return movies
+    return JSONResponse(content=movies)
 
 @app.get('/movies/{id}', tags=['Movies'])
-def get_movie(id: int):
+def get_movie(id: int = Path(ge=1, le=100)):
     '''docstring'''
     for item in movies:
         if item["id"] == id:
@@ -38,49 +60,28 @@ def get_movie(id: int):
     return []
 
 @app.get('/movies/', tags=['Movies'])
-def get_movies_by_category(category: str):
+def get_movies_by_category(category: str = Query(min_length=3, max_length=15)):
     '''docstring'''
     return category
 
 @app.post('/movies', tags=['Movies'])
-def create_movie(
-    id: int = Body(),
-    title: str = Body(),
-    overview: str = Body(),
-    year: int = Body(),
-    rating: float = Body(),
-    category: str = Body()
-):
+def create_movie(movie: Movie):
     '''docstring'''
-    movies.append({
-  "id": id,
-  "title": title,
-  "overview": overview,
-  "year": year,
-  "rating": rating,
-  "category": category
-})
+    movies.append(movie)
     print(movies)
-    return title
+    return JSONResponse(content={'message': 'Se ha cargado una nueva película', 'movie':[movie.dict() for m in movies]})
 
 @app.put('/movies/{id}', tags=['Movies'])
-def update_movie(
-    id: int,
-    title: str = Body(),
-    overview: str = Body(),
-    year: int = Body(),
-    rating: float = Body(),
-    category: str = Body()
-):
+def update_movie(id:int, movie:Movie):
     '''docstring'''
     for item in movies:
         if item["id"] == id:
-            item['title'] = title,
-            item['overview'] = overview,
-            item['year'] = year,
-            item['rating'] = rating,
-            item['category'] = category,
-            return movies
+            item['title'] = movie.title,
+            item['overview'] = movie.overview,
+            item['year'] = movie.year,
+            item['rating'] = movie.rating,
+            item['category'] = movie.category,
+            return JSONResponse(content={'message':'Se ha actualizado la película'})
         
 @app.delete('/movies/{id}', tags=['Movies'])
 def delete_movie(id:int):
@@ -88,4 +89,4 @@ def delete_movie(id:int):
     for item in movies:
         if item["id"]== id:
             movies.remove(item)
-            return movies
+            return JSONResponse(content={'message':'Se ha eliminado la película'})
