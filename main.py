@@ -51,7 +51,7 @@ def get_movies():
     '''docstring'''
     return JSONResponse(content=movies)
 
-@app.get('/movies/{id}', tags=['Movies'])
+@app.get('/movies/{id}', tags=['Movies'],status_code=200)
 def get_movie(id: int = Path(ge=1, le=100)):
     '''docstring'''
     for item in movies:
@@ -64,14 +64,14 @@ def get_movies_by_category(category: str = Query(min_length=3, max_length=15)):
     '''docstring'''
     return category
 
-@app.post('/movies', tags=['Movies'])
+@app.post('/movies', tags=['Movies'], status_code=201)
 def create_movie(movie: Movie):
     '''docstring'''
     movies.append(movie)
     print(movies)
     return JSONResponse(content={'message': 'Se ha cargado una nueva película', 'movie':[movie.dict() for m in movies]})
 
-@app.put('/movies/{id}', tags=['Movies'])
+@app.put('/movies/{id}', tags=['Movies'], status_code=200)
 def update_movie(id:int, movie:Movie):
     '''docstring'''
     for item in movies:
@@ -83,7 +83,7 @@ def update_movie(id:int, movie:Movie):
             item['category'] = movie.category,
             return JSONResponse(content={'message':'Se ha actualizado la película'})
         
-@app.delete('/movies/{id}', tags=['Movies'])
+@app.delete('/movies/{id}', tags=['Movies'], status_code=200)
 def delete_movie(id:int):
     '''docstring'''
     for item in movies:
